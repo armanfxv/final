@@ -1,0 +1,83 @@
+mport java.util.ArrayList;
+import java.util.List;
+
+// 1. CREATIONAL: Singleton Pattern
+class Database {
+    private static Database instance;
+    private Database() {
+        System.out.println("Connecting to Production Database...");
+    }
+    public static Database getInstance() {
+        if (instance == null) {
+            instance = new Database();
+        }
+        return instance;
+    }
+}
+
+//  2. STRUCTURAL: Adapter Pattern
+interface PaymentProcessor {
+    void processPayment(double amount);
+}
+
+class LegacyPaymentSystem {
+    void makePayment(double amount) {
+        System.out.println("Payment of $" + amount + " processed via Legacy API.");
+    }
+}
+
+class PaymentAdapter implements PaymentProcessor {
+    private LegacyPaymentSystem legacySystem;
+    public PaymentAdapter(LegacyPaymentSystem system) {
+        this.legacySystem = system;
+    }
+    @Override
+    public void processPayment(double amount) {
+        legacySystem.makePayment(amount);
+    }
+}
+
+// 3. BEHAVIORAL: Observer Pattern
+interface Observer {
+    void update(String status);
+}
+
+class Customer implements Observer {
+    private String name;
+    public Customer(String name) { this.name = name; }
+    @Override
+    public void update(String status) {
+        System.out.println("Notification for " + name + ": Order status is now [" + status + "]");
+    }
+}
+
+class Order {
+    private List<Observer> observers = new ArrayList<>();
+    public void addObserver(Observer o) { observers.add(o); }
+    public void setStatus(String status) {
+        System.out.println("System: Order status changed to " + status);
+        for (Observer o : observers) {
+            o.update(status);
+        }
+    }
+}
+
+
+public class Main {
+    public static void main(String[] args) {
+        // Demonstrate Singleton
+        Database db = Database.getInstance();
+
+        // Demonstrate Adapter
+        LegacyPaymentSystem oldSys = new LegacyPaymentSystem();
+        PaymentProcessor payment = new PaymentAdapter(oldSys);
+        payment.processPayment(499.99);
+
+        // Demonstrate Observer
+        Order order = new Order();
+        order.addObserver(new Customer("Aldos"));
+        order.addObserver(new Customer("Baizhan"));
+
+        order.setStatus("Shipped");
+    }
+}
